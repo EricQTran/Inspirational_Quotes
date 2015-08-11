@@ -33,8 +33,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-
-
+    //global variables
     int count = 0;
     UserAgent myUserAgent;
     RedditClient redditClient;
@@ -49,57 +48,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Allow for background process in main thread
+         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+         StrictMode.setThreadPolicy(policy);
+
+        //set global variables
         touch = (RelativeLayout) findViewById(R.id.touch);
         quoteText = (TextView) findViewById(R.id.quote);
         personText = (TextView) findViewById(R.id.person);
-
-
-
-
         quoteList = new ArrayList<Quote>();
-
-
         myUserAgent = UserAgent.of("desktop", "Inspirational Quotes", "0.1", "Eric");
         redditClient = new RedditClient(myUserAgent);
-
         credentials = net.dean.jraw.http.oauth.Credentials.script("vulturesama", "eric10208", "QzjE4_gH5QrsqA", "JUGdGBG3stBKgebfJbhvIMDxRvc");
 
-
         new getQuotesFromReddit().execute();
-
-
-        //Add more quotes here
-
     }
 
 
     private void getQuotes()
     {
         try {
+            //receive credentials from Reddit
             OAuthData authData = redditClient.getOAuthHelper().easyAuth(credentials);
             redditClient.authenticate(authData);
-            Submission quoteSub = redditClient.getRandomSubmission("quotes");
-            String quoteTitle = quoteSub.getTitle();
-
-
-            Quote quote5 = new Quote(quoteTitle,"Siddhartha Guatama");
-            quoteList.add(quote5);
-            Quote quote4 = new Quote(quoteTitle, "Troy Barnes");
-            quoteList.add(quote4);
-
-            Quote quote3 = new Quote(quoteTitle, "Darth Vader");
-            quoteList.add(quote3);
-            Quote quote2 = new Quote(quoteTitle, "Eleanor Roosevelt");
-            quoteList.add(quote2);
-            Quote quote1 = new Quote("Strength does not come from physical capacity. It comes from an indomitable will", "Moandas Gandhi");
-            quoteList.add(quote1);
 
             touch.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
+                    //Retrieve the quote from Reddit
+                    Submission quoteSub = redditClient.getRandomSubmission("quotes");
+                    String quoteTitle = quoteSub.getTitle();
+                    Quote quote = new Quote(quoteTitle,"");
+                    quoteList.add(quote);
 
                     if (count < quoteList.size()) {
+
                         Quote q = quoteList.get(count);
 
                         quoteText.setText(q.getQuote());
@@ -109,12 +93,8 @@ public class MainActivity extends AppCompatActivity {
                         count = count + 1;
 
                     } else {
-
                         count = 0;
-
                     }
-
-
                 }
             });
 
@@ -125,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Class allows for background processing of quote retrieval
     private class getQuotesFromReddit extends AsyncTask
     {
         protected Object doInBackground(Object... arg0)
@@ -132,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
             getQuotes();
             return null;
         }
+
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
